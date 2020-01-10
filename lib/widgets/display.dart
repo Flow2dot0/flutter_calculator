@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 class Display extends StatelessWidget {
 
+  final String currentNumber;
+
+  Display({@required this.currentNumber});
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -11,7 +15,7 @@ class Display extends StatelessWidget {
         height: 200,
         child: Center(
           child: Text(
-            '00000000',
+            currentNumber,
             textScaleFactor: 4,
             style: TextStyle(
               color: Colors.white,

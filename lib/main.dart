@@ -14,42 +14,24 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Pad(title: 'Calculator'),
+      home: Calculator(title: 'Calculator'),
     );
   }
 }
 
-class Pad extends StatefulWidget {
+class Calculator extends StatefulWidget {
+
   final String title;
 
-  Pad({@required this.title});
+  Calculator({@required this.title});
 
   @override
-  _PadState createState() => _PadState();
+  _CalculatorState createState() => _CalculatorState();
 }
 
-class _PadState extends State<Pad> {
+class _CalculatorState extends State<Calculator> {
 
 
-
-  handleCaseZeroKeyPad(){
-    for(int i = 16 ; i < 20; i++){
-      if(myKeyList[i]=='0'){
-        KeyPad(
-          onPressed: (){},
-          label: myKeyList[i],
-        );
-      }else if(myKeyList[i]==''){
-        continue;
-      }else{
-        KeyPad(
-          onPressed: (){},
-          label: myKeyList[i],
-          backgroundColor: (myKeyList[i] != '='? Colors.blueAccent[200] : Colors.orange),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +42,7 @@ class _PadState extends State<Pad> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Display(),
+          Display(currentNumber: '00000000'),
           SizedBox(height: 20.0,),
           Container(
             child: Column(
@@ -130,8 +112,6 @@ class _PadState extends State<Pad> {
               ],
             ),
           ),
-
-
         ],
       ),
     );
