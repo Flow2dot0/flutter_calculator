@@ -11,8 +11,22 @@ class MyNumber{
   }
 
   convertStringToNum() => number = num.parse(numberStr);
-  
-  rulesOfMaxDigitsTo8(){}
+
+  rulesOfMaxDigitsTo8(){
+    num mLength;
+
+    if(numberStr.contains('.')){
+      mLength = 9;
+    }else{
+      mLength = 8;
+    }
+    return mLength;
+  }
+
+  rulesOfMaxDigitsTo3AsDecimals(){
+    List<String> evaluate = numberStr.split('.');
+    return evaluate[1].length < 4 ? true : false;
+  }
 
   posNeg(){
     number *= -1;
@@ -25,7 +39,7 @@ class MyNumber{
   }
 
   addToTheRightAsDecimals(String nb){
-    if(!modeDecimal)
+    if(!modeDecimal || numberStr.length == rulesOfMaxDigitsTo8() || !rulesOfMaxDigitsTo3AsDecimals())
       return;
 
     numberStr = '$numberStr$nb';
@@ -33,7 +47,7 @@ class MyNumber{
   }
 
   addToTheLeftAsInts(String nb){
-    if(modeDecimal)
+    if(modeDecimal || numberStr.length == rulesOfMaxDigitsTo8())
       return;
 
     numberStr = '$numberStr$nb';
