@@ -12,18 +12,11 @@ class MyNumber{
 
   convertStringToNum() => number = num.parse(numberStr);
 
-  rulesOfMaxDigitsTo8(){
-    num mLength;
-
-    if(numberStr.contains('.')){
-      mLength = 9;
-    }else{
-      mLength = 8;
-    }
-    return mLength;
+  num rulesOfMaxDigitsTo8(){
+    return numberStr.contains('-')? 9 : 8;
   }
 
-  rulesOfMaxDigitsTo3AsDecimals(){
+  bool rulesOfMaxDigitsTo3AsDecimals(){
     List<String> evaluate = numberStr.split('.');
     return evaluate[1].length < 4 ? true : false;
   }
