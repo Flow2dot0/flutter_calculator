@@ -18,7 +18,7 @@ class MyNumber{
 
   bool rulesOfMaxDigitsTo3AsDecimals(){
     List<String> evaluate = numberStr.split('.');
-    return evaluate[1].length < 4 ? true : false;
+    return evaluate[1].length < 3 ? true : false;
   }
 
   posNeg(){

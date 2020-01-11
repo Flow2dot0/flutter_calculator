@@ -10,7 +10,7 @@ class Display extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 8.0,
-      color: Colors.blueAccent[100],
+      color: Colors.black87,
       child: Container(
         height: 200,
         child: Center(
