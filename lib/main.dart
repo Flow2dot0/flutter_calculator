@@ -33,10 +33,10 @@ class Calculator extends StatefulWidget {
 
 class _CalculatorState extends State<Calculator> {
 
-  MyNumber currentNumber;
   bool processingIsActive = false;
   List logs = <String>[];
   List<dynamic> sequences = [null, null, null];
+  List<dynamic> previousSequences;
   var index;
 
 
@@ -46,24 +46,22 @@ class _CalculatorState extends State<Calculator> {
       processingIsActive = false;
       sequences = [null, null, null];
     });
-
+    previousSequences = null;
   }
 
   void clear(){
-    if(sequences[0]!= null && sequences[1] == null){
-      allClear();
-    }else if(sequences[1] != null){
+    if(previousSequences!=null){
       setState(() {
-        processingIsActive = false;
-        sequences = [sequences[0], null, null];
-        index = sequences[0];
+        sequences = [...previousSequences];
+        index = sequences[2];
       });
-    }else if(sequences[2]!= null){
+    }else{
       allClear();
     }
+    previousSequences = null;
   }
 
-  resultOperation(){
+  void resultOperation(){
     if(sequences[2]==null)
       return;
 
@@ -84,23 +82,13 @@ class _CalculatorState extends State<Calculator> {
     }
 
     if(res!=null){
+      previousSequences = [...sequences];
       setState(() {
         sequences = [MyNumber(numberStr: res.toString()), null, null];
         index = sequences[0];
       });
     }
   }
-
-  addLeft(num nb){
-    sequences[0] = nb.toString();
-  }
-  addOperation(String operation){
-    sequences[1] = operation;
-  }
-  addRight(num nb){
-    sequences[2] = nb.toString();
-  }
-
 
   void getValuePressed(String string){
 
@@ -115,10 +103,14 @@ class _CalculatorState extends State<Calculator> {
         if(index == null){
           return;
         }else{
-          if(index == sequences[0]){
-            sequences[0] = MyNumber(numberStr: sequences[0].numberStr).posNeg();
-          }else if(index == sequences[2]){
-            sequences[2] = MyNumber(numberStr: sequences[0].numberStr).posNeg();
+          if(sequences[0] != null && sequences[2] == null){
+            setState(() {
+              index.posNeg();
+            });
+          }else if(sequences[2] != null){
+            setState(() {
+              index.posNeg();
+            });
           }
         }
         break;
@@ -126,15 +118,16 @@ class _CalculatorState extends State<Calculator> {
         if(index == null){
           return;
         }else{
-          if(index == sequences[0]){
-            num res = Operations.pourcentage(nb: sequences[0].number);
-            sequences[0] = MyNumber(numberStr: res.toString());
-          }else if(index == sequences[2]){
-//            num res = Operations.pourcentage(nb: sequences[2].number);
-//            sequences[2] = MyNumber(numberStr: res.toString());
+          if(sequences[0] != null && sequences[2] == null){
+            setState(() {
+              var operation = Operations.pourcentage(nb: index.number);
+              sequences[0] = MyNumber(numberStr: operation.toString());
+              index = sequences[0];
+            });
+          }else if(sequences[2] != null){
+            resultOperation();
           }
         }
-
         break;
       case '/':
         if(index == sequences[0]){
@@ -234,7 +227,6 @@ class _CalculatorState extends State<Calculator> {
             });
           }
         }else if(sequences[1] != null){
-          print('--->');
           if(sequences[2] == null){
             setState(() {
               sequences[2] = MyNumber(numberStr: string);
@@ -260,15 +252,28 @@ class _CalculatorState extends State<Calculator> {
   }
 
   String applyIndex(){
+
     if(index == null){
       return '0';
     }else if(index == sequences[0]){
-      return sequences[0].numberStr;
+      return index.numberStr.length > 8 ? 'ERR' : index.numberStr;
     }else if(index == sequences[1]){
-      return sequences[0].numberStr;
+      return index.numberStr.length > 8 ? 'ERR' : index.numberStr;
     }else if(index == sequences[2]){
-      return sequences[2].numberStr;
+      return index.numberStr.length > 8 ? 'ERR' : index.numberStr;
     }
+  }
+
+  String formattedDisplay(String str){
+    if(str[0]=='0'){
+      str[0].replaceRange(0, 0, '');
+    }else if(str.contains('.')){
+      List<String> edition = str.split('.');
+      if(edition[1].length == 1 && edition[1] == '0'){
+        str = edition[0];
+      }
+    }
+    return str;
   }
 
   @override
