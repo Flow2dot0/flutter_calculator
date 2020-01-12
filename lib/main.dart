@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
       home: Calculator(title: 'Calculator'),
     );
   }
@@ -73,16 +74,16 @@ class _CalculatorState extends State<Calculator> {
 
     num res;
     switch(sequences[1]){
-      case 'divide' :
+      case Actions.divide:
         res = Operations.divide(nbLeft: sequences[0].number, nbRight: sequences[2].number);
         break;
-      case 'multiply':
+      case Actions.multiply:
         res = Operations.multiply(nbLeft: sequences[0].number, nbRight: sequences[2].number);
         break;
-      case 'substract':
+      case Actions.substract:
         res = Operations.substract(nbLeft: sequences[0].number, nbRight: sequences[2].number);
         break;
-      case 'addition':
+      case Actions.addition:
         res = Operations.addition(nbLeft: sequences[0].number, nbRight: sequences[2].number);
         break;
     }
@@ -95,6 +96,19 @@ class _CalculatorState extends State<Calculator> {
         textScaleFactor = 4;
       });
       didOperation = true;
+    }
+  }
+
+  handleIndexes({Function firstIndex, Function lastIndex, Function operationIndex}){
+    // if index is first : do things
+    // if index is last : do things
+    // otherwise : do things
+    if(index == sequences[0]){
+      firstIndex;
+    }else if(index == sequences[2]){
+      lastIndex;
+    }else {
+      operationIndex;
     }
   }
 
@@ -143,48 +157,48 @@ class _CalculatorState extends State<Calculator> {
       case '/':
         if(index == sequences[0]){
           setState(() {
-            sequences[1] = 'divide';
+            sequences[1] = Actions.divide;
           });
         }else if(index == sequences[2]){
           resultOperation();
           setState(() {
-            sequences[1] = 'divide';
+            sequences[1] = Actions.divide;
           });
         }
         break;
       case 'x':
         if(index == sequences[0]){
           setState(() {
-            sequences[1] = 'multiply';
+            sequences[1] = Actions.multiply;
           });
         }else if(index == sequences[2]){
           resultOperation();
           setState(() {
-            sequences[1] = 'multiply';
+            sequences[1] = Actions.multiply;
           });
         }
         break;
       case '-':
         if(index == sequences[0]){
           setState(() {
-            sequences[1] = 'substract';
+            sequences[1] = Actions.substract;
           });
         }else if(index == sequences[2]){
           resultOperation();
           setState(() {
-            sequences[1] = 'substract';
+            sequences[1] = Actions.substract;
           });
         }
         break;
       case '+':
         if(index == sequences[0]){
           setState(() {
-            sequences[1] = 'addition';
+            sequences[1] = Actions.addition;
           });
         }else if(index == sequences[2]){
           resultOperation();
           setState(() {
-            sequences[1] = 'addition';
+            sequences[1] = Actions.addition;
           });
         }
         break;
@@ -409,4 +423,11 @@ class _CalculatorState extends State<Calculator> {
       ),
     );
   }
+}
+
+enum Actions{
+  multiply,
+  divide,
+  substract,
+  addition
 }
