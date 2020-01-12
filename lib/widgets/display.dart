@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 class Display extends StatelessWidget {
 
   final String currentNumber;
+  final double textScaleFactor;
 
-  Display({@required this.currentNumber});
+  Display({@required this.currentNumber, this.textScaleFactor = 4});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class Display extends StatelessWidget {
         child: Center(
           child: Text(
             currentNumber,
-            textScaleFactor: 4,
+            textScaleFactor: textScaleFactor,
             style: TextStyle(
               color: Colors.white,
             ),

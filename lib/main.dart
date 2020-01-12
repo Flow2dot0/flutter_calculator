@@ -38,23 +38,29 @@ class _CalculatorState extends State<Calculator> {
   List<dynamic> sequences = [null, null, null];
   List<dynamic> previousSequences;
   var index;
+  bool didOperation = false;
+  double textScaleFactor = 4;
 
 
   void allClear(){
     setState(() {
+      textScaleFactor = 4;
       index = null;
       processingIsActive = false;
       sequences = [null, null, null];
     });
     previousSequences = null;
+    didOperation = false;
   }
 
   void clear(){
     if(previousSequences!=null){
       setState(() {
+        textScaleFactor = 4;
         sequences = [...previousSequences];
         index = sequences[2];
       });
+      didOperation = false;
     }else{
       allClear();
     }
@@ -86,7 +92,9 @@ class _CalculatorState extends State<Calculator> {
       setState(() {
         sequences = [MyNumber(numberStr: res.toString()), null, null];
         index = sequences[0];
+        textScaleFactor = 4;
       });
+      didOperation = true;
     }
   }
 
@@ -106,10 +114,12 @@ class _CalculatorState extends State<Calculator> {
           if(sequences[0] != null && sequences[2] == null){
             setState(() {
               index.posNeg();
+              textScaleFactor = 4;
             });
           }else if(sequences[2] != null){
             setState(() {
               index.posNeg();
+              textScaleFactor = 4;
             });
           }
         }
@@ -123,6 +133,7 @@ class _CalculatorState extends State<Calculator> {
               var operation = Operations.pourcentage(nb: index.number);
               sequences[0] = MyNumber(numberStr: operation.toString());
               index = sequences[0];
+              textScaleFactor = 4;
             });
           }else if(sequences[2] != null){
             resultOperation();
@@ -245,10 +256,6 @@ class _CalculatorState extends State<Calculator> {
         }
       }
     }
-    print('index : $index');
-    print('seq 0 : ${sequences[0]}');
-    print('seq 1 : ${sequences[1]}');
-    print('seq 2 : ${sequences[2]}');
   }
 
   String applyIndex(){
@@ -256,24 +263,60 @@ class _CalculatorState extends State<Calculator> {
     if(index == null){
       return '0';
     }else if(index == sequences[0]){
-      return index.numberStr.length > 8 ? 'ERR' : index.numberStr;
+      return formattedDisplay(index.numberStr);
     }else if(index == sequences[1]){
-      return index.numberStr.length > 8 ? 'ERR' : index.numberStr;
+      return formattedDisplay(index.numberStr);
     }else if(index == sequences[2]){
-      return index.numberStr.length > 8 ? 'ERR' : index.numberStr;
+      return formattedDisplay(index.numberStr);
     }
   }
 
-  String formattedDisplay(String str){
+  String removeZeroOnLeft(String str){
     if(str[0]=='0'){
       str[0].replaceRange(0, 0, '');
-    }else if(str.contains('.')){
+    }
+    return str;
+  }
+
+  String toIntIfPossible(String str){
+    if(str.contains('.')){
       List<String> edition = str.split('.');
       if(edition[1].length == 1 && edition[1] == '0'){
         str = edition[0];
       }
     }
     return str;
+  }
+
+  String handleChangeFontSizeIfOperationExceed3(String str){
+    int size = str.length;
+    if(size > 8){
+      int extraSize = size-8;
+      textScaleFactor = textScaleFactor / (extraSize*0.20);
+    }
+    return str;
+  }
+
+  String formattedDisplay(String str){
+
+    if(!didOperation){
+      removeZeroOnLeft(str);
+      toIntIfPossible(str);
+      return str.length > 8 ? 'ERR' : str;
+    }else{
+      List<String> evaluate = str.contains('.') ? str.split('.') : null;
+      if(evaluate!=null){
+        handleChangeFontSizeIfOperationExceed3(str);
+        return str;
+      }else{
+        if(str.length > 8){
+          return 'ERR';
+        }else{
+          return str;
+        }
+      }
+    }
+
   }
 
   @override
@@ -285,7 +328,7 @@ class _CalculatorState extends State<Calculator> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Display(currentNumber: applyIndex()),
+          Display(currentNumber: applyIndex(), textScaleFactor: textScaleFactor,),
           SizedBox(height: 20.0,),
           Container(
             child: Column(
