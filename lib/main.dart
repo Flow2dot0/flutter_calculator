@@ -39,80 +39,22 @@ class _CalculatorState extends State<Calculator> {
   List<dynamic> sequences = [null, null, null];
   List<dynamic> previousSequences;
   var index;
-  bool didOperation = false;
+  int didOperationSteps = 0;
   double textScaleFactor = 4;
 
 
-  void allClear(){
-    setState(() {
-      textScaleFactor = 4;
-      index = null;
-      processingIsActive = false;
-      sequences = [null, null, null];
-    });
-    previousSequences = null;
-    didOperation = false;
-  }
-
-  void clear(){
-    if(previousSequences!=null){
-      setState(() {
-        textScaleFactor = 4;
-        sequences = [...previousSequences];
-        index = sequences[2];
-      });
-      didOperation = false;
-    }else{
-      allClear();
-    }
-    previousSequences = null;
-  }
-
-  void resultOperation(){
-    if(sequences[2]==null)
-      return;
-
-    num res;
-    switch(sequences[1]){
-      case Actions.divide:
-        res = Operations.divide(nbLeft: sequences[0].number, nbRight: sequences[2].number);
-        break;
-      case Actions.multiply:
-        res = Operations.multiply(nbLeft: sequences[0].number, nbRight: sequences[2].number);
-        break;
-      case Actions.substract:
-        res = Operations.substract(nbLeft: sequences[0].number, nbRight: sequences[2].number);
-        break;
-      case Actions.addition:
-        res = Operations.addition(nbLeft: sequences[0].number, nbRight: sequences[2].number);
-        break;
-    }
-
-    if(res!=null){
-      previousSequences = [...sequences];
-      setState(() {
-        sequences = [MyNumber(numberStr: res.toString()), null, null];
-        index = sequences[0];
-        textScaleFactor = 4;
-      });
-      didOperation = true;
-    }
-  }
-
-  handleIndexes({Function firstIndex, Function lastIndex, Function operationIndex}){
-    // if index is first : do things
-    // if index is last : do things
-    // otherwise : do things
-    if(index == sequences[0]){
-      firstIndex;
-    }else if(index == sequences[2]){
-      lastIndex;
-    }else {
-      operationIndex;
-    }
-  }
-
   void getValuePressed(String string){
+    if(index == null){
+      if(string.contains('+/-') ||
+          string.contains('%') ||
+          string.contains('/') ||
+          string.contains('x') ||
+          string.contains('-') ||
+          string.contains('+') ||
+          string.contains('=')){
+        return;
+      }
+    }
 
     switch(string){
       case 'AC':
@@ -122,158 +64,245 @@ class _CalculatorState extends State<Calculator> {
         clear();
         break;
       case '+/-':
-        if(index == null){
-          return;
-        }else{
-          if(sequences[0] != null && sequences[2] == null){
+        handleIndexes(
+          firstIndex: () => {
             setState(() {
-              index.posNeg();
-              textScaleFactor = 4;
-            });
-          }else if(sequences[2] != null){
+            index.posNeg();
+            })
+          },
+          lastIndex: () => {
             setState(() {
-              index.posNeg();
-              textScaleFactor = 4;
-            });
+            index.posNeg();
+            })
           }
-        }
+        );
         break;
       case '%':
-        if(index == null){
-          return;
-        }else{
-          if(sequences[0] != null && sequences[2] == null){
-            setState(() {
-              var operation = Operations.pourcentage(nb: index.number);
-              sequences[0] = MyNumber(numberStr: operation.toString());
-              index = sequences[0];
-              textScaleFactor = 4;
-            });
-          }else if(sequences[2] != null){
-            resultOperation();
-          }
-        }
+        handleIndexes(
+        firstIndex: () => {
+              setState(() {
+                num operation = Operations.pourcentage(nb: index.number);
+                sequences[0] = MyNumber(numberStr: operation.toString());
+                index = sequences[0];
+                didOperationSteps = 3;
+              })
+            },
+            lastIndex: () => {
+              resultOperation()
+            }
+        );
         break;
       case '/':
-        if(index == sequences[0]){
-          setState(() {
-            sequences[1] = Actions.divide;
-          });
-        }else if(index == sequences[2]){
-          resultOperation();
-          setState(() {
-            sequences[1] = Actions.divide;
-          });
-        }
+        handleIndexes(
+            firstIndex: () => {
+              setState(() {
+                didOperationSteps = 2;
+                sequences[1] = Actions.divide;
+              })
+            },
+            lastIndex: () => {
+              resultOperation(),
+            }
+        );
         break;
       case 'x':
-        if(index == sequences[0]){
-          setState(() {
-            sequences[1] = Actions.multiply;
-          });
-        }else if(index == sequences[2]){
-          resultOperation();
-          setState(() {
-            sequences[1] = Actions.multiply;
-          });
-        }
+        handleIndexes(
+            firstIndex: () => {
+              setState(() {
+                didOperationSteps = 2;
+                sequences[1] = Actions.multiply;
+              })
+            },
+            lastIndex: () => {
+              resultOperation(),
+            }
+        );
         break;
       case '-':
-        if(index == sequences[0]){
-          setState(() {
-            sequences[1] = Actions.substract;
-          });
-        }else if(index == sequences[2]){
-          resultOperation();
-          setState(() {
-            sequences[1] = Actions.substract;
-          });
-        }
+        handleIndexes(
+            firstIndex: () => {
+              setState(() {
+                didOperationSteps = 2;
+                sequences[1] = Actions.substract;
+              })
+            },
+            lastIndex: () => {
+              resultOperation(),
+            }
+        );
         break;
       case '+':
-        if(index == sequences[0]){
-          setState(() {
-            sequences[1] = Actions.addition;
-          });
-        }else if(index == sequences[2]){
-          resultOperation();
-          setState(() {
-            sequences[1] = Actions.addition;
-          });
-        }
+        handleIndexes(
+            firstIndex: () => {
+              setState(() {
+                didOperationSteps = 2;
+                sequences[1] = Actions.addition;
+              })
+            },
+            lastIndex: () => {
+              resultOperation(),
+            }
+        );
         break;
       case '=':
         resultOperation();
         break;
       case ',':
-        if(sequences[0]!=null && sequences[1] == null){
-          if(!sequences[0].modeDecimal){
+        handleIndexes(
+          indexIsNull: () => {
             setState(() {
+              sequences[0] = MyNumber(numberStr: '0');
+              index = sequences[0];
               index.toDecimal();
-            });
-          }
-        }else if(sequences[0] == null && sequences[1] == null){
-          setState(() {
-            sequences[0] = MyNumber(numberStr: '0');
-            index = sequences[0];
-            index.toDecimal();
-          });
-        }else if(sequences[2]!=null && sequences[1] != null){
-          if(!sequences[2].modeDecimal){
+            })
+          },
+          firstIndex: () => {
+            if(!index.modeDecimal){
+              setState(() {
+                index.toDecimal();
+              })
+            }
+          },
+          lastIndex: () => {
+          if(!index.modeDecimal){
+              setState(() {
+                index.toDecimal();
+              })
+            }
+          },
+          operationIndex: () => {
             setState(() {
+              sequences[2] = MyNumber(numberStr: '0');
+              index = sequences[2];
               index.toDecimal();
-            });
+            })
           }
-        }else if(sequences[2] == null && sequences[1] != null){
-          setState(() {
-            sequences[2] = MyNumber(numberStr: '0');
-            index = sequences[2];
-            index.toDecimal();
-          });
-        }
+        );
         break;
       default: {
         processingIsActive = true;
-        // si ya rien encore de tapé
         if(sequences[0] == null) {
           setState(() {
+            didOperationSteps = 1;
             sequences[0] = MyNumber(numberStr: string);
             index = sequences[0];
           });
-          // si l index est 0
         }else if(sequences[0] == index && sequences[1] == null && sequences[2] == null){
           if(index.modeDecimal){
             setState(() {
+              didOperationSteps = 1;
               index.addToTheRightAsDecimals(string);
             });
           }else{
             setState(() {
+              didOperationSteps = 1;
               index.addToTheLeftAsInts(string);
             });
           }
         }else if(sequences[1] != null){
           if(sequences[2] == null){
             setState(() {
+              didOperationSteps = 1;
               sequences[2] = MyNumber(numberStr: string);
               index = sequences[2];
             });
           }else if(index.modeDecimal){
             setState(() {
+              didOperationSteps = 1;
               index.addToTheRightAsDecimals(string);
             });
           }else{
             setState(() {
+              didOperationSteps = 1;
               index.addToTheLeftAsInts(string);
             });
           }
-
         }
       }
     }
   }
 
-  String applyIndex(){
+  void allClear(){
+    setState(() {
+      didOperationSteps = 0;
+      index = null;
+      processingIsActive = false;
+      sequences = [null, null, null];
+    });
+    previousSequences = null;
+  }
 
+  void clear(){
+    if(previousSequences!=null){
+      setState(() {
+        didOperationSteps = 0;
+        sequences = [...previousSequences];
+        index = sequences[2];
+      });
+    }else{
+      allClear();
+    }
+    previousSequences = null;
+  }
+
+  void resultOperation(){
+    if(sequences[2]==null){
+      return;
+    }
+
+    num res;
+    Actions action;
+    switch(sequences[1]){
+      case Actions.divide:
+        res = Operations.divide(nbLeft: sequences[0].number, nbRight: sequences[2].number);
+        action = Actions.divide;
+        break;
+      case Actions.multiply:
+        res = Operations.multiply(nbLeft: sequences[0].number, nbRight: sequences[2].number);
+        action = Actions.multiply;
+        break;
+      case Actions.substract:
+        res = Operations.substract(nbLeft: sequences[0].number, nbRight: sequences[2].number);
+        action = Actions.substract;
+        break;
+      case Actions.addition:
+        res = Operations.addition(nbLeft: sequences[0].number, nbRight: sequences[2].number);
+        action = Actions.addition;
+        break;
+    }
+
+    if(res!=null){
+      previousSequences = [...sequences];
+      setState(() {
+        sequences = [MyNumber(numberStr: res.toString()), null, null];
+        index = sequences[0];
+        sequences[1] = action;
+        didOperationSteps = 3;
+      });
+    }
+  }
+
+  handleIndexes({Function indexIsNull, Function firstIndex, Function lastIndex, Function operationIndex}){
+    // return in case of index unsetted
+    // if index is first : do things
+    // if index is last : do things
+    // otherwise : do things
+    if(index == null){
+      if(indexIsNull()){
+        indexIsNull();
+      }else{
+        return;
+      }
+    }else if(index == sequences[0]){
+      firstIndex();
+    }else if(index == sequences[2]){
+      lastIndex();
+    }else if(sequences[2] == null && sequences[1] != null && sequences[0] != null){
+      operationIndex();
+    }
+  }
+
+  String applyIndex(){
     if(index == null){
       return '0';
     }else if(index == sequences[0]){
@@ -285,12 +314,8 @@ class _CalculatorState extends State<Calculator> {
     }
   }
 
-  String removeZeroOnLeft(String str){
-    if(str[0]=='0'){
-      str[0].replaceRange(0, 0, '');
-    }
-    return str;
-  }
+  String removeZeroOnLeft(String str) => str[0]=='0' ? str[0].replaceRange(0, 0, '') : str;
+
 
   String toIntIfPossible(String str){
     if(str.contains('.')){
@@ -302,24 +327,34 @@ class _CalculatorState extends State<Calculator> {
     return str;
   }
 
-  String handleChangeFontSizeIfOperationExceed3(String str){
-    int size = str.length;
-    if(size > 8){
-      int extraSize = size-8;
-      textScaleFactor = textScaleFactor / (extraSize*0.20);
+  void handleChangeFontSizeIfOperationExceed3(String str){
+    if(str.length > 8){
+      int extraSize = str.length-8;
+      setState(() {
+        textScaleFactor = textScaleFactor - (extraSize*0.20);
+      });
     }
-    return str;
   }
 
   String formattedDisplay(String str){
 
-    if(!didOperation){
-      removeZeroOnLeft(str);
-      toIntIfPossible(str);
+    if(didOperationSteps == 0){
+      setState(() {
+        textScaleFactor = 4;
+      });
+      str = removeZeroOnLeft(str);
+      str = toIntIfPossible(str);
       return str.length > 8 ? 'ERR' : str;
-    }else{
+    }else if(didOperationSteps == 1){
+      setState(() {
+        textScaleFactor = 4;
+      });
+      str = removeZeroOnLeft(str);
+      return str.length > 8 ? 'ERR' : str;
+    }else if(didOperationSteps == 3){
       List<String> evaluate = str.contains('.') ? str.split('.') : null;
       if(evaluate!=null){
+        str = toIntIfPossible(str);
         handleChangeFontSizeIfOperationExceed3(str);
         return str;
       }else{
@@ -329,6 +364,8 @@ class _CalculatorState extends State<Calculator> {
           return str;
         }
       }
+    }else if(didOperationSteps==2){
+      return str;
     }
 
   }
