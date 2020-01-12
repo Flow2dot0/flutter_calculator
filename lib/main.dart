@@ -283,10 +283,6 @@ class _CalculatorState extends State<Calculator> {
   }
 
   handleIndexes({Function indexIsNull, Function firstIndex, Function lastIndex, Function operationIndex}){
-    // return in case of index unsetted
-    // if index is first : do things
-    // if index is last : do things
-    // otherwise : do things
     if(index == null){
       if(indexIsNull()){
         indexIsNull();
